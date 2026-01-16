@@ -69,6 +69,14 @@ async function run() {
             res.send(result);
         });
 
+        app.get("/items/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+
+            const result = await itemsCollection.findOne(query);
+            res.send(result);
+        });
+
         app.post("/items", async (req, res) => {
             const name = req.body?.name;
             const description = req.body?.description;
