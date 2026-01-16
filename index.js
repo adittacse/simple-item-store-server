@@ -12,6 +12,11 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+const isValidPrice = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0;
+};
+
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.gkaujxr.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -27,6 +32,33 @@ async function run() {
         await client.connect();
         const db = client.db("simpleItemStore");
         const itemsCollection = db.collection("items");
+
+        // items's related api's
+        app.post("/items", async (req, res) => {
+            const name = req.body?.name;
+            const description = req.body?.description;
+            const imageUrl = req.body?.imageUrl;
+            const category = req.body?.category;
+            const priceRaw = req.body?.price;
+
+            if (!name || !description || !imageUrl || !isValidPrice(priceRaw)) {
+                return res.status(400).send({
+                    message: "Missing/invalid required fields (name, description, price, imageUrl)",
+                });
+            }
+
+            const doc = {
+                name,
+                description,
+                imageUrl,
+                category: category || "",
+                price: Number(priceRaw),
+                createdAt: new Date(),
+            };
+
+            const result = await itemsCollection.insertOne(doc);
+            res.send(result);
+        });
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
