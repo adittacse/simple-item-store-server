@@ -103,6 +103,41 @@ async function run() {
             res.send(result);
         });
 
+        app.patch("/items/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const { name, description, imageUrl, category, price } = req.body;
+
+            const updateDoc = { $set: {} };
+
+            if (name) {
+                updateDoc.$set.name = name;
+            }
+            if (description) {
+                updateDoc.$set.description = description;
+            }
+            if (imageUrl) {
+                updateDoc.$set.imageUrl = imageUrl;
+            }
+            if (category) {
+                updateDoc.$set.category = category;
+            }
+
+            if (price) {
+                if (!isValidPrice(price)) {
+                    return res.status(400).send({ message: "Invalid price" });
+                }
+                updateDoc.$set.price = Number(price);
+            }
+
+            if (Object.keys(updateDoc.$set).length === 0) {
+                return res.send({ message: "Nothing to update" });
+            }
+            
+            const result = await itemsCollection.updateOne(query, updateDoc);
+            return res.send(result);
+        });
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log(
