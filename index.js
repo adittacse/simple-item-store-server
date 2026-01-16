@@ -158,11 +158,11 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-    res.send("Book Worm server side is running!");
+    res.send("Simple Item Store server side is running!");
 });
 
 app.listen(port, () => {
     console.log(
-        `Book Worm listening on ${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}`,
+        `Simple Item Store listening on ${process.env.PROTOCOL}://${process.env.HOST}:${process.env.PORT}`,
     );
 });
