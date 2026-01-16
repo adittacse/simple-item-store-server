@@ -34,6 +34,41 @@ async function run() {
         const itemsCollection = db.collection("items");
 
         // items's related api's
+        app.get("/items", async (req, res) => {
+            const { search, category, sort = "newest" } = req.query;
+
+            const query = {};
+
+            if (search) {
+                query.$or = [
+                    { name: { $regex: search, $options: "i" } },
+                    { description: { $regex: search, $options: "i" } },
+                ];
+            }
+
+            if (category) {
+                query.category = category;
+            }
+
+            let sortQuery = {};
+            switch (sort) {
+                case "price_low":
+                    sortQuery = { price: 1 };
+                    break;
+                case "price_high":
+                    sortQuery = { price: -1 };
+                    break;
+                case "newest":
+                default:
+                    sortQuery = { createdAt: -1 };
+                    break;
+            }
+
+            const cursor = itemsCollection.find(query).sort(sortQuery);
+            const result = await cursor.toArray();
+            res.send(result);
+        });
+
         app.post("/items", async (req, res) => {
             const name = req.body?.name;
             const description = req.body?.description;
